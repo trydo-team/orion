@@ -706,7 +706,7 @@ impl<
         ek.encrypt(&m, r.as_ref(), c_prime)?;
 
         // Step 9:
-        let ct_choice = c.eq(c_prime);
+        let ct_choice = subtle::Choice::from((c != c_prime) as u8);
         c_prime.zeroize(); // Discard c_prime, as we only need it as a buffer.
 
         for (x, y) in k.iter_mut().zip(k_bar.iter()) {
