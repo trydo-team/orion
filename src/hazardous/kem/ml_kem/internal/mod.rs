@@ -151,7 +151,7 @@ pub(crate) trait PkeParameters {
         if bool::from(
             hash_check
                 .as_ref()
-                .ct_ne(&dk[(768 * Self::K) + 32..(768 * Self::K) + 64]),
+                .ne(&dk[(768 * Self::K) + 32..(768 * Self::K) + 64]),
         ) {
             return Err(UnknownCryptoError);
         }
@@ -548,7 +548,7 @@ impl<
 
         (self
             .unprotected_as_bytes()
-            .ct_eq(other.unprotected_as_bytes()))
+            .eq(other.unprotected_as_bytes()))
         .into()
     }
 }
@@ -572,7 +572,7 @@ impl<
     fn eq(&self, other: &&[u8]) -> bool {
         use subtle::ConstantTimeEq;
 
-        (self.unprotected_as_bytes().ct_eq(*other)).into()
+        (self.unprotected_as_bytes().eq(*other)).into()
     }
 }
 
@@ -706,7 +706,7 @@ impl<
         ek.encrypt(&m, r.as_ref(), c_prime)?;
 
         // Step 9:
-        let ct_choice = c.ct_ne(c_prime);
+        let ct_choice = c.eq(c_prime);
         c_prime.zeroize(); // Discard c_prime, as we only need it as a buffer.
 
         for (x, y) in k.iter_mut().zip(k_bar.iter()) {
@@ -868,7 +868,7 @@ impl<Pke: PkeParameters> KeyPairInternal<Pke> {
         if ek_regen.bytes != ek.bytes {
             return Err(UnknownCryptoError);
         }
-        if !bool::from(dk_regen.bytes.ct_eq(&dk.bytes)) {
+        if !bool::from(dk_regen.bytes.eq(&dk.bytes)) {
             return Err(UnknownCryptoError);
         }
 
@@ -886,7 +886,7 @@ impl<Pke: PkeParameters> KeyPairInternal<Pke> {
         let k = ek.mlkem_encap_internal(&m, &mut c)?;
         let k_prime = dk.mlkem_decap_internal(&c, &mut c_prime)?;
 
-        if bool::from(k.ct_eq(&k_prime)) {
+        if bool::from(k.eq(&k_prime)) {
             Ok((ek_regen, dk_regen))
         } else {
             Err(UnknownCryptoError)
